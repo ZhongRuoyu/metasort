@@ -135,6 +135,58 @@ template <typename SequenceT, std::size_t N>
 using remove_first_n_t = typename remove_first_n<SequenceT, N>::type;
 #endif
 
+namespace quicksort {
+
+namespace detail {
+
+template <typename SequenceT, bool Condition>
+struct filter;
+
+template <typename T, T... Values, bool Condition>
+struct filter<sequence<T, Values...>, Condition> {
+    using type = sequence<
+        T, conditional<Condition, sequence<T, Values>, sequence<T>>::type...>;
+};
+
+#if __cplusplus >= 201402L
+template <typename SequenceT, bool Condition>
+using filter_t = typename filter<SequenceT, Condition>::type;
+#endif
+
+}  // namespace detail
+
+template <typename SequenceT>
+struct sort;
+
+template <typename T>
+struct sort<sequence<T>> {
+    using type = sequence<T>;
+};
+
+template <typename T, T Value>
+struct sort<sequence<T, Value>> {
+    using type = sequence<T, Value>;
+};
+
+template <typename T, T First, T... Rest>
+struct sort<sequence<T, First, Rest...>> {
+    using type = typename sequence_cat<
+        typename sort<typename sequence_cat<
+            typename conditional<(Rest <= First), sequence<T, Rest>,
+                                 sequence<T>>::type...>::type>::type,
+        sequence<T, First>,
+        typename sort<typename sequence_cat<
+            typename conditional<(Rest > First), sequence<T, Rest>,
+                                 sequence<T>>::type...>::type>::type>::type;
+};
+
+#if __cplusplus >= 201402L
+template <typename SequenceT>
+using sort_t = typename sort<SequenceT>::type;
+#endif
+
+}  // namespace quicksort
+
 namespace mergesort {
 
 namespace detail {
