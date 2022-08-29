@@ -178,16 +178,31 @@ struct sort<sequence<T, Value>> {
     using type = sequence<T, Value>;
 };
 
-template <typename T, T First, T... Rest>
-struct sort<sequence<T, First, Rest...>> {
+template <typename T, T... Values>
+struct sort<sequence<T, Values...>> {
+   private:
+    static constexpr T pivot =
+        get<sequence<T, Values...>, sizeof...(Values) / 2>::value;
+
+    using rest = typename sequence_cat<
+        typename first_n<sequence<T, Values...>, sizeof...(Values) / 2>::type,
+        typename remove_first_n<sequence<T, Values...>,
+                                sizeof...(Values) / 2 + 1>::type>::type;
+
+    struct less_equal {
+        constexpr bool operator()(const T &value) { return value <= pivot; }
+    };
+
+    struct greater {
+        constexpr bool operator()(const T &value) { return value > pivot; }
+    };
+
+   public:
     using type = typename sequence_cat<
-        typename sort<typename sequence_cat<
-            typename conditional<(Rest <= First), sequence<T, Rest>,
-                                 sequence<T>>::type...>::type>::type,
-        sequence<T, First>,
-        typename sort<typename sequence_cat<
-            typename conditional<(Rest > First), sequence<T, Rest>,
-                                 sequence<T>>::type...>::type>::type>::type;
+        typename sort<typename detail::filter<rest, less_equal>::type>::type,
+        sequence<T, pivot>,
+        typename sort<typename detail::filter<rest, greater>::type>::type>::
+        type;
 };
 
 #if __cplusplus >= 201402L
