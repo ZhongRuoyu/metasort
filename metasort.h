@@ -149,17 +149,17 @@ namespace quicksort {
 
 namespace detail {
 
-template <typename SequenceT, bool Condition>
+template <typename SequenceT, typename Condition>
 struct filter;
 
-template <typename T, T... Values, bool Condition>
+template <typename T, T... Values, typename Condition>
 struct filter<sequence<T, Values...>, Condition> {
-    using type = sequence<
-        T, conditional<Condition, sequence<T, Values>, sequence<T>>::type...>;
+    using type = typename sequence_cat<typename conditional<
+        Condition()(Values), sequence<T, Values>, sequence<T>>::type...>::type;
 };
 
 #if __cplusplus >= 201402L
-template <typename SequenceT, bool Condition>
+template <typename SequenceT, typename Condition>
 using filter_t = typename filter<SequenceT, Condition>::type;
 #endif
 
