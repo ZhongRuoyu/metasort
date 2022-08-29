@@ -88,8 +88,13 @@ using sequence_cat_t = typename sequence_cat<SequenceTs...>::type;
 template <typename SequenceT, std::size_t N>
 struct first_n;
 
-template <typename T, T... Values>
-struct first_n<sequence<T, Values...>, 0> {
+template <typename T>
+struct first_n<sequence<T>, 0> {
+    using type = sequence<T>;
+};
+
+template <typename T, T First, T... Rest>
+struct first_n<sequence<T, First, Rest...>, 0> {
     using type = sequence<T>;
 };
 
@@ -114,9 +119,14 @@ using first_n_t = typename first_n<SequenceT, N>::type;
 template <typename SequenceT, std::size_t N>
 struct remove_first_n;
 
-template <typename T, T... Values>
-struct remove_first_n<sequence<T, Values...>, 0> {
-    using type = sequence<T, Values...>;
+template <typename T>
+struct remove_first_n<sequence<T>, 0> {
+    using type = sequence<T>;
+};
+
+template <typename T, T First, T... Rest>
+struct remove_first_n<sequence<T, First, Rest...>, 0> {
+    using type = sequence<T, First, Rest...>;
 };
 
 template <typename T, T First, T... Rest>
